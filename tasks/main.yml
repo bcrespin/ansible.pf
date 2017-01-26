@@ -1,0 +1,8 @@
+---
+# tasks file for ansible.pf
+
+- include: pf.yml
+  when: 
+    - (ansible_os_family == 'OpenBSD' ) or (ansible_os_family =='FreeBSD' )
+    - pf_role_enable
+  tags: [ 'pf']

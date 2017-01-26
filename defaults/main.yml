@@ -1,0 +1,9 @@
+---
+# defaults file for ansible.pf
+pf_role_enable: False
+pf_ftpproxy_enable: False
+pf_file_content: ''
+pf_tables: []
+pf_ip_forward_enable: False
+pf_ip_forward_sysctl_value: "net.inet.ip.forwarding"
+pf_service_name: pf

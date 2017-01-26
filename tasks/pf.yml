@@ -1,0 +1,42 @@
+---
+- name: generate pf.conf file
+  copy: content="{{ pf_file_content }}" dest=/etc/pf.conf mode=0600 owner=root group=wheel backup=yes
+  when: pf_file_content != ''
+  register: pf_conf
+
+- name: create pf_tables folder
+  file: path=/etc/pf_tables mode=750 owner=root group=wheel state=directory
+  when: pf_tables != []
+
+- name: import pf tables files
+  copy: content="{{ item.content }}" dest="{{ item.dest }}" mode=0600 owner=root group=wheel backup=yes
+  with_items: "{{ pf_tables }}"
+  no_log: true
+  register: pf_tables
+
+- name: (re)load ruleset
+  command: sh -c "/sbin/pfctl -n -f /etc/pf.conf && /sbin/pfctl -f /etc/pf.conf"
+  when: pf_conf.changed|default(false) or pf_tables.changed|default(false)
+
+- name: ensure pf started at boot (FreeBSD)
+  service: name={{ pf_service_name }} state=started  enabled=yes
+  when: ansible_os_family == 'FreeBSD'
+
+- name: ensure pf started at boot (OpenBSD)
+  command: rcctl enable pf
+  when: ansible_os_family == 'OpenBSD'
+
+- name: start ftpproxy service
+  service: name=ftpproxy state=started enabled=yes
+  when: pf_ftpproxy_enable
+
+- name: enable ip forwarding
+  sysctl:
+    name: "{{ pf_ip_forward_sysctl_value }}"
+    value: 1
+    sysctl_set: yes
+  when: pf_ip_forward_enable
+
+- name: ensure pf is enabled
+  shell: (pfctl -e || true )
+  when: pf_file_content != ''
