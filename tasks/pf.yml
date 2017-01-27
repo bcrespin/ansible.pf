@@ -40,3 +40,7 @@
 - name: ensure pf is enabled
   shell: (pfctl -e || true )
   when: pf_file_content != ''
+
+- name: ensure pflogd started
+  service: name="{{ pf_pflogd_service_name }}" state=started enabled=yes
+  when: pf_pflogd_enable
