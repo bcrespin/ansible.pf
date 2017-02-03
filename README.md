@@ -4,6 +4,9 @@ Role Name
 configure pf rules
 it should work on FreeBSD and OpenBSD if pf rules respect pf version of the OS
 
+new pf.conf ruleset is tested, but if test fail, pf.conf is not rollbacked even pf.conf is backuped for manual restore.
+of course, if test fail, active pf ruleset is not altered, till reboot...
+
 Requirements
 ------------
 
@@ -45,7 +48,7 @@ Example Playbook
   vars:
     pf_role_enable: yes
     pf_file_content: |
-      # ansible managed, do nto eidt directly !
+      # ansible managed, do nto edit directly !
       set skip on lo
       table <whitelist_from_file> persist file "/etc/pf_tables/whitelist.table"
       table <blacklist_from_file> persist file "/etc/pf_tables/blacklist.table"
@@ -72,4 +75,5 @@ BSD
 
 TODO
 ----------------
-restructure pf_tables to be avoid dest and use only name + a variable for tables folder
+restructure pf_tables to be avoid .dest and use only name + a variable for tables folder
+see to restore pf.conf if  test of new ruleset has failed
