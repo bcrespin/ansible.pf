@@ -1,38 +1,75 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+configure pf rules
+it should work on FreeBSD and OpenBSD if pf rules respect pf version of the OS
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+none 
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```yaml
+* pf_role_enable: False
+if role will be applied 
+
+* pf_ftpproxy_enable: False
+if ftp proxy service need to be started on localhost
+
+* pf_file_content: ''
+all pf rules, see example playbook
+
+* pf_tables: []
+pf tables handled by the role, see example playbook
+
+* pf_ip_forward_enable: False
+if host will froward packets between interfaces or not
+
+* pf_pflogd_enable: False
+if pflogd daemon has to be started
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+none
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yaml
+- hosts:  pf_compatible_hosts
+  vars:
+    pf_role_enable: yes
+    pf_file_content: |
+      # ansible managed, do nto eidt directly !
+      set skip on lo
+      table <whitelist_from_file> persist file "/etc/pf_tables/whitelist.table"
+      table <blacklist_from_file> persist file "/etc/pf_tables/blacklist.table"
+      table <whitelist> { 172.16.3.0/24 , 172.16.4.0/24 }
+      block in quick from <blacklist_from_file>
+      pass in quick from <whitelist_from_file>
+      pass in quick from <whitelist>
+    pf_tables:
+      - name: blacklist
+        dest: /etc/pf_tables/blacklist.table
+        content: |
+          192.168.0.0/16
+      - name: whitelist
+        dest: /etc/pf_tables/whitelist.table
+        content: |
+          172.16.1.0/24
+          172.16.2.0/24
+```
 
 License
 -------
 
 BSD
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+TODO
+----------------
+restructure pf_tables to be avoid dest and use only name + a variable for tables folder
